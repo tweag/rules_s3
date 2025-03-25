@@ -15,6 +15,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-load("//gcs/private/extensions:gcs_bucket.bzl", _gcs_bucket = "gcs_bucket")
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-gcs_bucket = _gcs_bucket
+bzl_library(
+    name = "repo_rules",
+    srcs = glob(["*.bzl"]),
+    visibility = [
+        "//docs:__pkg__",
+        "//s3/private:__subpackages__",
+    ],
+    deps = ["//s3/private"],
+)
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["*"]),
+    visibility = ["//:__subpackages__"],
+)

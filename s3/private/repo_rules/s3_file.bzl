@@ -15,13 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-load("//gcs/private:url_encoding.bzl", "url_encode")
-load("//gcs/private:util.bzl", "bucket_url", "download_args", "parse_gs_url", "have_unblocked_downloads")
+load("//s3/private:url_encoding.bzl", "url_encode")
+load("//s3/private:util.bzl", "bucket_url", "download_args", "parse_s3_url", "have_unblocked_downloads")
 
-def _gcs_file_impl(repository_ctx):
-    gs_url = repository_ctx.attr.url
-    target = parse_gs_url(gs_url)
-    repository_ctx.report_progress("Fetching {}".format(gs_url))
+def _s3_file_impl(repository_ctx):
+    s3_url = repository_ctx.attr.url
+    target = parse_s3_url(s3_url)
+    repository_ctx.report_progress("Fetching {}".format(s3_url))
 
     # start download
     args = download_args(repository_ctx.attr, target["bucket_name"], target["remote_path"])
@@ -30,7 +30,7 @@ def _gcs_file_impl(repository_ctx):
     # populate BUILD files
     repository_ctx.file("BUILD.bazel", "exports_files(glob([\"**\"]))".format(args["output"]))
     rulename = "augmented_executable" if repository_ctx.attr.executable else "augmented_blob"
-    build_file_content = """load("@rules_gcs//gcs/private/rules:augmented_blob.bzl", "{}")\n""".format(rulename)
+    build_file_content = """load("@rules_s3//s3/private/rules:augmented_blob.bzl", "{}")\n""".format(rulename)
     build_file_content += template_augmented(args["output"], target["remote_path"], repository_ctx.attr.executable)
     repository_ctx.file("file/BUILD.bazel", build_file_content)
 
@@ -38,26 +38,26 @@ def _gcs_file_impl(repository_ctx):
     if have_unblocked_downloads():
         waiter.wait()
 
-_gcs_file_doc = """Downloads a file from a GCS bucket and makes it available to be used as a file group.
+_s3_file_doc = """Downloads a file from an S3 bucket and makes it available to be used as a file group.
 
 Examples:
   Suppose you need to have a large file that is read during a test and is stored in a private bucket.
-  This file is available from gs://my_org_assets/testdata.bin.
+  This file is available from s3://my_org_assets/testdata.bin.
   Then you can add to your MODULE.bazel file:
 
   ```starlark
-  gcs_file = use_repo_rule("@rules_gcs//gcs:repo_rules.bzl", "gcs_file")
+  s3_file = use_repo_rule("@rules_s3//s3:repo_rules.bzl", "s3_file")
 
-  gcs_file(
+  s3_file(
       name = "my_testdata",
-      url = "gs://my_org_assets/testdata.bin",
+      url = "s3://my_org_assets/testdata.bin",
       sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   )
   ```
 
   Targets would specify `@my_testdata//file` as a dependency to depend on this file."""
 
-_gcs_file_attrs = {
+_s3_file_attrs = {
     "canonical_id": attr.string(
         doc = """A canonical ID of the file downloaded.
 
@@ -94,14 +94,14 @@ easier but should be set before shipping.""",
     ),
     "url": attr.string(
         mandatory = True,
-        doc = "A URL to a file that will be made available to Bazel.\nThis must be a 'gs://' URL.",
+        doc = "A URL to a file that will be made available to Bazel.\nThis must be a 's3://' URL.",
     ),
 }
 
-gcs_file = repository_rule(
-    implementation = _gcs_file_impl,
-    attrs = _gcs_file_attrs,
-    doc = _gcs_file_doc,
+s3_file = repository_rule(
+    implementation = _s3_file_impl,
+    attrs = _s3_file_attrs,
+    doc = _s3_file_doc,
 )
 
 def template_augmented(local_path, remote_path, executable):

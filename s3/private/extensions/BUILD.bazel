@@ -18,13 +18,13 @@ limitations under the License.
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 bzl_library(
-    name = "repo_rules",
+    name = "extensions",
     srcs = glob(["*.bzl"]),
-    visibility = [
-        "//docs:__pkg__",
-        "//gcs/private:__subpackages__",
+    visibility = ["//docs:__pkg__"],
+    deps = [
+        "//s3/private",
+        "//s3/private/repo_rules",
     ],
-    deps = ["//gcs/private"],
 )
 
 filegroup(

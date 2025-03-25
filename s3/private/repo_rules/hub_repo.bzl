@@ -15,10 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-load("//gcs/private:util.bzl", "deps_from_file", "object_repo_name")
+load("//s3/private:util.bzl", "deps_from_file", "object_repo_name")
 
 def _alias_hub_repo_impl(repository_ctx):
-    repository_ctx.report_progress("Rebuilding GCS alias tree")
+    repository_ctx.report_progress("Rebuilding S3 alias tree")
     deps = deps_from_file(repository_ctx, repository_ctx.attr.lockfile, repository_ctx.attr.lockfile_jsonpath)
     build_file_content = ""
     for local_path, info in deps.items():
@@ -40,16 +40,16 @@ alias_hub_repo = repository_rule(
     attrs = {
         "bucket": attr.string(),
         "lockfile": attr.label(
-            doc = "Map of dependency files to load from the GCS bucket",
+            doc = "Map of dependency files to load from the S3 bucket",
         ),
         "lockfile_jsonpath": attr.string(),
     },
 )
 
 def _symlink_hub_repo_impl(repository_ctx):
-    repository_ctx.report_progress("Rebuilding GCS symlink tree")
+    repository_ctx.report_progress("Rebuilding S3 symlink tree")
     deps = deps_from_file(repository_ctx, repository_ctx.attr.lockfile, repository_ctx.attr.lockfile_jsonpath)
-    build_file_content = """load("@rules_gcs//gcs/private/rules:symlink.bzl", "symlink")\n"""
+    build_file_content = """load("@rules_s3//s3/private/rules:symlink.bzl", "symlink")\n"""
     for local_path, info in deps.items():
         build_file_content += dep_to_symlink_build_file(repository_ctx.attr.bucket, local_path, info["remote_path"])
     repository_ctx.file("BUILD.bazel", build_file_content)
@@ -69,16 +69,16 @@ symlink_hub_repo = repository_rule(
     attrs = {
         "bucket": attr.string(),
         "lockfile": attr.label(
-            doc = "Map of dependency files to load from the GCS bucket",
+            doc = "Map of dependency files to load from the S3 bucket",
         ),
         "lockfile_jsonpath": attr.string(),
     },
 )
 
 def _copy_hub_repo_impl(repository_ctx):
-    repository_ctx.report_progress("Rebuilding GCS copy tree")
+    repository_ctx.report_progress("Rebuilding S3 copy tree")
     deps = deps_from_file(repository_ctx, repository_ctx.attr.lockfile, repository_ctx.attr.lockfile_jsonpath)
-    build_file_content = """load("@rules_gcs//gcs/private/rules:copy.bzl", "copy")\n"""
+    build_file_content = """load("@rules_s3//s3/private/rules:copy.bzl", "copy")\n"""
     for local_path, info in deps.items():
         build_file_content += dep_to_copy_build_file(repository_ctx.attr.bucket, local_path, info["remote_path"])
     repository_ctx.file("BUILD.bazel", build_file_content)
@@ -98,7 +98,7 @@ copy_hub_repo = repository_rule(
     attrs = {
         "bucket": attr.string(),
         "lockfile": attr.label(
-            doc = "Map of dependency files to load from the GCS bucket",
+            doc = "Map of dependency files to load from the S3 bucket",
         ),
         "lockfile_jsonpath": attr.string(),
     },

@@ -15,12 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-load("//gcs/private:util.bzl", "bucket_url", "deps_from_file", "have_unblocked_downloads")
+load("//s3/private:util.bzl", "bucket_url", "deps_from_file", "have_unblocked_downloads")
 
 def _eager_impl(repository_ctx):
-    repository_ctx.report_progress("Downloading files from gs://{}".format(repository_ctx.attr.lockfile))
+    repository_ctx.report_progress("Downloading files from s3://{}".format(repository_ctx.attr.lockfile))
     deps = deps_from_file(repository_ctx, repository_ctx.attr.lockfile, repository_ctx.attr.lockfile_jsonpath)
-    build_file_content = """load("@rules_gcs//gcs/private/rules:copy.bzl", "copy")\n"""
+    build_file_content = """load("@rules_s3//s3/private/rules:copy.bzl", "copy")\n"""
 
     # start downloads
     waiters = []
@@ -56,7 +56,7 @@ eager = repository_rule(
     attrs = {
         "bucket": attr.string(),
         "lockfile": attr.label(
-            doc = "Map of dependency files to load from the GCS bucket",
+            doc = "Map of dependency files to load from the S3 bucket",
         ),
         "lockfile_jsonpath": attr.string(),
     },

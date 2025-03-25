@@ -3,15 +3,15 @@ load("@stardoc//stardoc:stardoc.bzl", "stardoc")
 stardoc(
     name = "repo_rules",
     out = "repo_rules.md",
-    input = "//gcs:repo_rules.bzl",
-    deps = ["//gcs/private/repo_rules"],
+    input = "//s3:repo_rules.bzl",
+    deps = ["//s3/private/repo_rules"],
 )
 
 stardoc(
     name = "extensions",
     out = "extensions.md",
-    input = "//gcs:extensions.bzl",
-    deps = ["//gcs/private/extensions"],
+    input = "//s3:extensions.bzl",
+    deps = ["//s3/private/extensions"],
 )
 
 filegroup(

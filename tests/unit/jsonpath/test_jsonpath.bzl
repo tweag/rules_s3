@@ -1,6 +1,6 @@
 load("@rules_testing//lib:analysis_test.bzl", "test_suite", "analysis_test")
 load("@rules_testing//lib:util.bzl", "util")
-load("//gcs/private:jsonpath.bzl", "walk_jsonpath")
+load("//s3/private:jsonpath.bzl", "walk_jsonpath")
 
 EXAMPLE_OBJECT = {
     "foo": "a string",

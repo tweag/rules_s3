@@ -21,7 +21,7 @@ bzl_library(
     name = "rules",
     srcs = glob(["*.bzl"]),
     visibility = ["//docs:__pkg__"],
-    deps = ["//gcs/private"],
+    deps = ["//s3/private"],
 )
 
 filegroup(

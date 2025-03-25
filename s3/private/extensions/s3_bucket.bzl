@@ -15,18 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-load("//gcs/private:url_encoding.bzl", "url_encode")
-load("//gcs/private:util.bzl", "deps_from_file", "object_repo_name")
-load("//gcs/private/repo_rules:eager.bzl", _eager = "eager")
-load("//gcs/private/repo_rules:gcs_file.bzl", _gcs_file = "gcs_file")
+load("//s3/private:url_encoding.bzl", "url_encode")
+load("//s3/private:util.bzl", "deps_from_file", "object_repo_name")
+load("//s3/private/repo_rules:eager.bzl", _eager = "eager")
+load("//s3/private/repo_rules:s3_file.bzl", _s3_file = "s3_file")
 load(
-    "//gcs/private/repo_rules:hub_repo.bzl",
+    "//s3/private/repo_rules:hub_repo.bzl",
     _alias_hub_repo = "alias_hub_repo",
     _copy_hub_repo = "copy_hub_repo",
     _symlink_hub_repo = "symlink_hub_repo",
 )
 
-def _gcs_bucket_impl(module_ctx):
+def _s3_bucket_impl(module_ctx):
     blob_repos = {}
     hub_names_seen = {}
     root_module_direct_deps = []
@@ -36,7 +36,7 @@ def _gcs_bucket_impl(module_ctx):
     for module in module_ctx.modules:
         for from_file in module.tags.from_file:
             if from_file.name in hub_names_seen:
-                fail("duplicate module names \"{}\" in gcs_bucket.from_file".format(from_file.name))
+                fail("duplicate module names \"{}\" in s3_bucket.from_file".format(from_file.name))
             hub_names_seen[from_file.name] = True
             if from_file.dev_dependency:
                 root_module_direct_dev_deps.append(from_file.name)
@@ -49,12 +49,12 @@ def _gcs_bucket_impl(module_ctx):
                     if args["name"] not in blob_repos:
                         blob_repos[args["name"]] = args
                     elif args != blob_repos[args["name"]]:
-                        fail("the blob gs://{}/{} was requested twice with different arguments".format(from_file.bucket, info["remote_path"]))
+                        fail("the blob s3://{}/{} was requested twice with different arguments".format(from_file.bucket, info["remote_path"]))
             generate_hub_repo(from_file)
 
     # generate all requested blobs
     for args in blob_repos.values():
-        _gcs_file(**args)
+        _s3_file(**args)
     return module_ctx.extension_metadata(
         root_module_direct_deps = root_module_direct_deps,
         root_module_direct_dev_deps = root_module_direct_dev_deps,
@@ -62,14 +62,14 @@ def _gcs_bucket_impl(module_ctx):
     )
 
 def dep_to_blob_repo(bucket_name, local_path, info):
-    gs_url = "gs://{}/{}".format(bucket_name, info["remote_path"])
+    s3_url = "s3://{}/{}".format(bucket_name, info["remote_path"])
     return {
         "name": object_repo_name(bucket_name, info["remote_path"]),
         "downloaded_file_path": local_path,
         "executable": True,
         "sha256": info["sha256"] if "sha256" in info else None,
         "integrity": info["integrity"] if "integrity" in info else None,
-        "url": gs_url,
+        "url": s3_url,
     }
 
 def generate_hub_repo(from_file_tag):
@@ -90,12 +90,12 @@ def generate_hub_repo(from_file_tag):
         bucket = from_file_tag.bucket,
     )
 
-_gcs_bucket_doc = """Downloads a collection of objects from a GCS bucket and makes them available under a single hub repository name.
+_s3_bucket_doc = """Downloads a collection of objects from an S3 bucket and makes them available under a single hub repository name.
 
 Examples:
-  Suppose your code depends on a collection of large assets that are used during code generation or testing. Those assets are stored in a private gcs bucket `gs://my_org_assets`.
+  Suppose your code depends on a collection of large assets that are used during code generation or testing. Those assets are stored in a private s3 bucket `s3://my_org_assets`.
 
-  In the local repository, the user creates a `gcs_lock.json` JSON lockfile describing the required objects, including their expected hashes:
+  In the local repository, the user creates a `s3_lock.json` JSON lockfile describing the required objects, including their expected hashes:
 
   ```json
     {
@@ -125,11 +125,11 @@ Examples:
   following lines are added to `MODULE.bazel`:
 
   ```starlark
-  gcs_bucket = use_extension("@rules_gcs//gcs:extensions.bzl", "gcs_bucket")
-  gcs_bucket.from_file(
+  s3_bucket = use_extension("@rules_s3//s3:extensions.bzl", "s3_bucket")
+  s3_bucket.from_file(
       name = "trainingdata",
       bucket = "my_org_assets",
-      lockfile = "@//:gcs_lock.json",
+      lockfile = "@//:s3_lock.json",
   )
   ```
 
@@ -142,11 +142,11 @@ _from_file_attrs = {
         mandatory = True,
     ),
     "bucket": attr.string(
-        doc = "Name of the GCS bucket",
+        doc = "Name of the S3 bucket",
         mandatory = True,
     ),
     "lockfile": attr.label(
-        doc = "JSON lockfile containing objects to load from the GCS bucket",
+        doc = "JSON lockfile containing objects to load from the S3 bucket",
         mandatory = True,
     ),
     "lockfile_jsonpath": attr.string(
@@ -171,10 +171,10 @@ _from_file_tag = tag_class(
     attrs = _from_file_attrs,
 )
 
-gcs_bucket = module_extension(
-    implementation = _gcs_bucket_impl,
+s3_bucket = module_extension(
+    implementation = _s3_bucket_impl,
     tag_classes = {
         "from_file": _from_file_tag,
     },
-    doc = _gcs_bucket_doc,
+    doc = _s3_bucket_doc,
 )

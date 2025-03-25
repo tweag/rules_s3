@@ -3,27 +3,27 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # v1.0.1 is the earliest verson supporting Bazel 5.
 # Always use the latest version available.
 http_archive(
-    name = "rules_gcs",
-    urls = ["https://github.com/tweag/rules_gcs/releases/download/v1.0.1/rules_gcs-v1.0.1.tar.gz"],
+    name = "rules_s3",
+    urls = ["https://github.com/tweag/rules_s3/releases/download/v1.0.1/rules_s3-v1.0.1.tar.gz"],
     sha256 = "410e0b7825562536e13cdfaef0bd0e28b1adbdd3ce72666628173dbfee094565",
-    strip_prefix = "rules_gcs-1.0.1",
+    strip_prefix = "rules_s3-1.0.1",
 )
 
-load("@rules_gcs//gcs:repo_rules.bzl", "gcs_archive", "gcs_file")
+load("@rules_s3//s3:repo_rules.bzl", "s3_archive", "s3_file")
 
-# Note: gcs_bucket.from_file is a module extension, which doesn't work out of the box with Bazel 5.
-# You can use gcs_file and gcs_archive to fetch individual files and archives from a bucket.
+# Note: s3_bucket.from_file is a module extension, which doesn't work out of the box with Bazel 5.
+# You can use s3_file and s3_archive to fetch individual files and archives from a bucket.
 
-gcs_archive(
+s3_archive(
     name = "kubernetes_1_30_3",
     build_file_content = """exports_files(glob(["**"]))""",
     integrity = "sha256-9x9WRt4Xw8n3IgE9T1PlChVoInD1YXrAYdQw6moWAM0=",
     strip_prefix = "kubernetes",
-    url = "gs://kubernetes-release/release/v1.30.3/kubernetes.tar.gz",
+    url = "s3://kubernetes-release/release/v1.30.3/kubernetes.tar.gz",
 )
 
-gcs_file(
+s3_file(
     name = "k8s_1_30_2_release_notes",
     sha256 = "e879f76b7bac8effe4cc53bce034f258ce15b2825f3018c7078f25e832c3feb8",
-    url = "gs://kubernetes-release/release/v1.30.2/release-notes.json",
+    url = "s3://kubernetes-release/release/v1.30.2/release-notes.json",
 )

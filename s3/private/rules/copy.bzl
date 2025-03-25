@@ -15,23 +15,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-load("//gcs/private:providers.bzl", "RemotePath")
+load("//s3/private:providers.bzl", "RemotePath")
 
-def _symlink_impl(ctx):
-    lnk = ctx.actions.declare_file(ctx.attr.name)
-    ctx.actions.symlink(output = lnk, target_file = ctx.file.target, is_executable = True)
+# TODO: support Windows
+
+def _copy_impl(ctx):
+    out = ctx.actions.declare_file(ctx.attr.name)
+    ctx.actions.run_shell(
+        inputs = [ctx.file.src],
+        outputs = [out],
+        command = "cp -f \"$1\" \"$2\"",
+        arguments = [ctx.file.src.path, out.path],
+        progress_message = "Copying s3 file {}".format(ctx.attr.name),
+        use_default_shell_env = True,
+    )
     return [
-        RemotePath(remote_path = ctx.attr.target[RemotePath].remote_path),
+        RemotePath(remote_path = ctx.attr.src[RemotePath].remote_path),
         DefaultInfo(
-            files = depset([lnk]),
-            executable = lnk,
+            files = depset([out]),
+            runfiles = ctx.runfiles(files = [out]),
+            executable = out,
         ),
     ]
 
-symlink = rule(
-    implementation = _symlink_impl,
+copy = rule(
+    implementation = _copy_impl,
     attrs = {
-        "target": attr.label(
+        "src": attr.label(
             allow_single_file = True,
             executable = True,
             cfg = "target",

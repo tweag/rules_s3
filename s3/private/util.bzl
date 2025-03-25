@@ -15,21 +15,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-load("//gcs/private:jsonpath.bzl", "walk_jsonpath")
-load("//gcs/private:url_encoding.bzl", "url_encode")
+load("//s3/private:jsonpath.bzl", "walk_jsonpath")
+load("//s3/private:url_encoding.bzl", "url_encode")
 
-def parse_gs_url(url):
+def parse_s3_url(url):
     """
-    Parses a URL of the form `gs://BUCKET_NAME/remote/path/to/object` into
+    Parses a URL of the form `s3://BUCKET_NAME/remote/path/to/object` into
     a dict with fields "bucket_name" and "remote_path".
     """
     if type(url) != type(""):
         fail("expected string, got {}".format(type(url)))
-    if not url.startswith("gs://"):
-        fail("expected URL with scheme 'gs', got {}".format(type(url)))
-    bucket_name_and_remote_path = url.removeprefix("gs://")
+    if not url.startswith("s3://"):
+        fail("expected URL with scheme 's3', got {}".format(type(url)))
+    bucket_name_and_remote_path = url.removeprefix("s3://")
     if not "/" in bucket_name_and_remote_path:
-        fail("expected URL with format 'gs://BUCKET_NAME/remote/path/to/object'")
+        fail("expected URL with format 's3://BUCKET_NAME/remote/path/to/object'")
     (bucket_name, _, remote_path) = bucket_name_and_remote_path.partition("/")
     if len(bucket_name) == 0:
         fail("expected URL with non-empty bucket name")
@@ -92,7 +92,7 @@ def parse_lockfile(lockfile_content, jsonpath):
 
     # the deps map should be a dict from local_path to object info
     if type(lockfile) != type({}):
-        return fail("gcs_bucket.from_file expects a JSON file with a dict as the top-level - got {}".format(type(lockfile_content)))
+        return fail("s3_bucket.from_file expects a JSON file with a dict as the top-level - got {}".format(type(lockfile_content)))
     processed_lockfile = {}
     for (local_path, v) in lockfile.items():
         # we expect the following schema:
@@ -102,7 +102,7 @@ def parse_lockfile(lockfile_content, jsonpath):
         has_integrity = "integrity" in v
         has_sha256 = "sha256" in v
         if has_integrity == has_sha256:
-            fail("parsing gcs object with local path {}: expected exactly one of \"integrity\" and \"sha256\"".format(local_path))
+            fail("parsing s3 object with local path {}: expected exactly one of \"integrity\" and \"sha256\"".format(local_path))
         info = {
             "remote_path": v["remote_path"] if has_remote_path else local_path,
         }

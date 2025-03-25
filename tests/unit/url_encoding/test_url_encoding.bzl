@@ -1,6 +1,6 @@
 load("@rules_testing//lib:analysis_test.bzl", "test_suite", "analysis_test")
 load("@rules_testing//lib:util.bzl", "util")
-load("//gcs/private:url_encoding.bzl", "url_encode", "url_decode")
+load("//s3/private:url_encoding.bzl", "url_encode", "url_decode")
 
 def _test_url_encode(env):
     env.expect.that_str(url_encode("foo")).equals("foo")

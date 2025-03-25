@@ -19,7 +19,7 @@ limitations under the License.
 Augments a blob with metadata using custom providers.
 """
 
-load("//gcs/private:providers.bzl", "RemotePath")
+load("//s3/private:providers.bzl", "RemotePath")
 
 def _augmented_blob_impl(ctx):
     return [
@@ -33,12 +33,12 @@ def _augmented_blob_impl(ctx):
 augmented_blob = rule(
     attrs = {
         "local_path": attr.label(
-            doc = "Local path of the file downloaded from GCS",
+            doc = "Local path of the file downloaded from S3",
             allow_single_file = True,
             mandatory = True,
         ),
         "remote_path": attr.string(
-            doc = "Remote GCS path of the file, minus the gs://BUCKET/ prefix",
+            doc = "Remote S3 path of the file, minus the s3://BUCKET/ prefix",
             mandatory = True,
         ),
     },
@@ -62,14 +62,14 @@ def _augmented_executable_impl(ctx):
 augmented_executable = rule(
     attrs = {
         "local_path": attr.label(
-            doc = "Local path of the file downloaded from GCS",
+            doc = "Local path of the file downloaded from S3",
             allow_single_file = True,
             mandatory = True,
             executable = True,
             cfg = "target",
         ),
         "remote_path": attr.string(
-            doc = "Remote GCS path of the file, minus the gs://BUCKET/ prefix",
+            doc = "Remote S3 path of the file, minus the s3://BUCKET/ prefix",
             mandatory = True,
         ),
     },

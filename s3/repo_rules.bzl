@@ -15,19 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//s3/private/repo_rules:s3_archive.bzl", _s3_archive = "s3_archive")
+load("//s3/private/repo_rules:s3_file.bzl", _s3_file = "s3_file")
 
-bzl_library(
-    name = "private",
-    srcs = glob(["*.bzl"]),
-    visibility = [
-        "//docs:__pkg__",
-        "//gcs/private:__subpackages__",
-    ],
-)
-
-filegroup(
-    name = "all_files",
-    srcs = glob(["*"]),
-    visibility = ["//:__subpackages__"],
-)
+s3_file = _s3_file
+s3_archive = _s3_archive

@@ -15,8 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-load("//gcs/private/repo_rules:gcs_archive.bzl", _gcs_archive = "gcs_archive")
-load("//gcs/private/repo_rules:gcs_file.bzl", _gcs_file = "gcs_file")
+load("//s3/private/extensions:s3_bucket.bzl", _s3_bucket = "s3_bucket")
 
-gcs_file = _gcs_file
-gcs_archive = _gcs_archive
+s3_bucket = _s3_bucket

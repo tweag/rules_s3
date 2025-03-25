@@ -1,11 +1,11 @@
 module(
-    name = "rules_gcs",
+    name = "rules_s3",
     version = "1.0.1",
     compatibility_level = 0,
 )
 
 # ✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂
-# only dev_dependencies below this line - rules_gcs is lean
+# only dev_dependencies below this line - rules_s3 is lean
 # ✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂
 
 bazel_dep(

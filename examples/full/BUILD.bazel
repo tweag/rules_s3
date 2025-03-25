@@ -21,7 +21,7 @@ sh_test(
 )
 
 sh_test(
-    name = "check_part_of_gcs_archive",
+    name = "check_part_of_s3_archive",
     srcs = ["check_file_hash.sh"],
     args = [
         "$(location @kubernetes_1_30_3//:README.md)",

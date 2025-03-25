@@ -15,12 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-load("//gcs/private:util.bzl", "bucket_url", "download_and_extract_args", "parse_gs_url")
+load("//s3/private:util.bzl", "bucket_url", "download_and_extract_args", "parse_s3_url")
 
-def _gcs_archive_impl(repository_ctx):
-    gs_url = repository_ctx.attr.url
-    target = parse_gs_url(gs_url)
-    repository_ctx.report_progress("Fetching {}".format(gs_url))
+def _s3_archive_impl(repository_ctx):
+    s3_url = repository_ctx.attr.url
+    target = parse_s3_url(s3_url)
+    repository_ctx.report_progress("Fetching {}".format(s3_url))
 
     # download && extract the repo
     args = download_and_extract_args(repository_ctx.attr, target["bucket_name"], target["remote_path"])
@@ -40,7 +40,7 @@ def _gcs_archive_impl(repository_ctx):
     if has_build_file_label:
         repository_ctx.file("BUILD.bazel", repository_ctx.read(repository_ctx.attr.build_file))
 
-_gcs_archive_doc = """Downloads a Bazel repository as a compressed archive file from a GCS bucket, decompresses it,
+_s3_archive_doc = """Downloads a Bazel repository as a compressed archive file from an S3 bucket, decompresses it,
 and makes its targets available for binding.
 
 It supports the following file extensions: `"zip"`, `"jar"`, `"war"`, `"aar"`, `"tar"`,
@@ -49,7 +49,7 @@ or `"deb"`.
 
 Examples:
   Suppose your code depends on a private library packaged as a `.tar.gz`
-  which is available from gs://my_org_code/libmagic.tar.gz. This `.tar.gz` file
+  which is available from s3://my_org_code/libmagic.tar.gz. This `.tar.gz` file
   contains the following directory structure:
 
   ```
@@ -74,11 +74,11 @@ Examples:
   following lines are added to `MODULE.bazel`:
 
   ```starlark
-  gcs_archive = use_repo_rule("@rules_gcs//gcs:repo_rules.bzl", "gcs_archive")
+  s3_archive = use_repo_rule("@rules_s3//s3:repo_rules.bzl", "s3_archive")
 
-  gcs_archive(
+  s3_archive(
       name = "magic",
-      url = "gs://my_org_code/libmagic.tar.gz",
+      url = "s3://my_org_code/libmagic.tar.gz",
       sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       build_file = "@//:magic.BUILD",
   )
@@ -87,7 +87,7 @@ Examples:
   Then targets would specify `@magic//:lib` as a dependency.
 """
 
-_gcs_archive_attrs = {
+_s3_archive_attrs = {
     "build_file": attr.label(
         allow_single_file = True,
         doc =
@@ -181,12 +181,12 @@ following: `"zip"`, `"jar"`, `"war"`, `"aar"`, `"tar"`, `"tar.gz"`, `"tgz"`,
     ),
     "url": attr.string(
         mandatory = True,
-        doc = "A URL to a file that will be made available to Bazel.\nThis must be a 'gs://' URL.",
+        doc = "A URL to a file that will be made available to Bazel.\nThis must be a 's3://' URL.",
     ),
 }
 
-gcs_archive = repository_rule(
-    implementation = _gcs_archive_impl,
-    attrs = _gcs_archive_attrs,
-    doc = _gcs_archive_doc,
+s3_archive = repository_rule(
+    implementation = _s3_archive_impl,
+    attrs = _s3_archive_attrs,
+    doc = _s3_archive_doc,
 )
