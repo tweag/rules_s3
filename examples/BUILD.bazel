@@ -9,10 +9,6 @@ load(
 
 default_test_runner(
     name = "default_test_runner",
-)
-
-default_test_runner(
-    name = "authenticated_test_runner",
     bazel_cmds = [
         "info",
         "run @tweag-credential-helper//installer",
@@ -22,7 +18,17 @@ default_test_runner(
 
 bazel_integration_tests(
     name = "full_test",
+    additional_env_inherit = [
+        "AWS_ACCESS_KEY_ID",
+        "AWS_DEFAULT_REGION",
+        "AWS_REGION",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_SESSION_TOKEN",
+        "R2_ACCESS_KEY_ID",
+        "R2_SECRET_ACCESS_KEY",
+    ],
     bazel_versions = bazel_binaries.versions.all,
+    env = {"CREDENTIAL_HELPER_LOGGING": "debug"},
     test_runner = ":default_test_runner",
     workspace_files = integration_test_utils.glob_workspace_files("full") + [
         "//:local_repository_files",
@@ -30,26 +36,11 @@ bazel_integration_tests(
     workspace_path = "full",
 )
 
-bazel_integration_tests(
-    name = "tweag_credential_helper",
-    additional_env_inherit = ["GOOGLE_APPLICATION_CREDENTIALS"],
-    bazel_versions = bazel_binaries.versions.all,
-    env = {"CREDENTIAL_HELPER_LOGGING": "debug"},
-    test_runner = ":authenticated_test_runner",
-    workspace_files = integration_test_utils.glob_workspace_files("tweag-credential-helper") + [
-        "//:local_repository_files",
-    ],
-    workspace_path = "tweag-credential-helper",
-)
-
 test_suite(
     name = "integration_tests",
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
     tests = integration_test_utils.bazel_integration_test_names(
         "full_test",
-        bazel_binaries.versions.all,
-    ) + integration_test_utils.bazel_integration_test_names(
-        "tweag_credential_helper",
         bazel_binaries.versions.all,
     ),
     visibility = ["//:__subpackages__"],

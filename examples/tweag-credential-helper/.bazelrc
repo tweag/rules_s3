@@ -1,4 +1,0 @@
-common --credential_helper=storage.googleapis.com=%workspace%/tools/credential-helper
-
-# recommended optimization
-common --experimental_repository_cache_hardlinks

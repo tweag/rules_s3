@@ -1,4 +1,11 @@
-common --experimental_credential_helper=storage.googleapis.com=%workspace%/tools/credential-helper
+# legacy global endpoint for path-style requests
+common --credential_helper=s3.amazonaws.com=%workspace%/tools/credential-helper
+# legacy global endpoint for virtual-hosted–style requests
+common --credential_helper=s3.*.amazonaws.com=%workspace%/tools/credential-helper
+# regional endpoint for path-style requests
+common --credential_helper=*.s3.amazonaws.com=%workspace%/tools/credential-helper
+# regional endpoint for virtual-hosted–style requests
+common --credential_helper=*.s3.*.amazonaws.com=%workspace%/tools/credential-helper
 
 # recommended optimization
 common --experimental_repository_cache_hardlinks
