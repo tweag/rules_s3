@@ -10,7 +10,7 @@ module(
 
 bazel_dep(
     name = "tweag-credential-helper",
-    version = "0.0.3",
+    version = "0.0.4",
     dev_dependency = True,
 )
 bazel_dep(
@@ -20,32 +20,32 @@ bazel_dep(
 )
 bazel_dep(
     name = "rules_bazel_integration_test",
-    version = "0.31.0",
+    version = "0.32.0",
     dev_dependency = True,
 )
 bazel_dep(
     name = "rules_java",
-    version = "7.6.5",
+    version = "8.11.0",
     dev_dependency = True,
 )
 bazel_dep(
     name = "rules_proto",
-    version = "6.0.2",
+    version = "7.1.0",
     dev_dependency = True,
 )
 bazel_dep(
     name = "rules_testing",
-    version = "0.6.0",
+    version = "0.8.0",
     dev_dependency = True,
 )
 bazel_dep(
     name = "stardoc",
-    version = "0.7.0",
+    version = "0.8.0",
     dev_dependency = True,
 )
 bazel_dep(
     name = "toolchains_protoc",
-    version = "0.3.2",
+    version = "0.3.7",
     dev_dependency = True,
 )
 
@@ -78,5 +78,5 @@ bazel_binaries = use_extension(
     dev_dependency = True,
 )
 bazel_binaries.download(version = "7.1.0")
-bazel_binaries.download(version = "8.0.0")
-use_repo(bazel_binaries, "bazel_binaries", "bazel_binaries_bazelisk", "build_bazel_bazel_7_1_0", "build_bazel_bazel_8_0_0")
+bazel_binaries.download(version = "8.1.1")
+use_repo(bazel_binaries, "bazel_binaries", "bazel_binaries_bazelisk", "build_bazel_bazel_7_1_0", "build_bazel_bazel_8_1_1")
