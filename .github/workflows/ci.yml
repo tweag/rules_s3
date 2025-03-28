@@ -27,7 +27,7 @@ jobs:
         repo_name: rules_s3
     - name: Execute Tests
       shell: bash
-      run: bazelisk test //...
+      run: bazelisk test --config=ci //...
   integration_test_matrix:
     strategy:
       fail-fast: false
@@ -39,20 +39,12 @@ jobs:
       contents: read
     steps:
     - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
-    - name: Authenticate with GCP
-      id: gauth
-      uses: google-github-actions/auth@v1
-      with:
-        workload_identity_provider: "projects/341646648187/locations/global/workloadIdentityPools/github-workload-pool/providers/github-provider-gcs"
-        service_account: "github-service-account@git-credential-helper-dev.iam.gserviceaccount.com"
-        export_environment_variables: true
-        create_credentials_file: true
     - uses: cgrindel/gha_set_up_bazel@v1
       with:
         repo_name: rules_s3
     - name: Execute Integration Tests
       shell: bash
-      run: bazelisk test //:all_integration_tests
+      run: bazelisk test --config=ci //:all_integration_tests
 
   all_ci_tests:
     runs-on: ubuntu-22.04
