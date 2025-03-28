@@ -5,7 +5,6 @@ module(
 
 bazel_dep(
     name = "rules_s3",
-    version = "0.0.0",
 )
 local_path_override(
     module_name = "rules_s3",
@@ -14,7 +13,7 @@ local_path_override(
 
 bazel_dep(
     name = "tweag-credential-helper",
-    version = "0.0.3",
+    version = "0.0.4",
     dev_dependency = True,
 )
 
@@ -24,7 +23,7 @@ bazel_dep(
 )
 bazel_dep(
     name = "platforms",
-    version = "0.0.10",
+    version = "0.0.11",
 )
 
 # Fetching individual blobs works just like `http_file`
