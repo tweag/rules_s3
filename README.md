@@ -233,26 +233,18 @@ Examples:
 - Credential helper not found
 
     ```
-    WARNING: Error retrieving auth headers, continuing without: Failed to get credentials for 'https://storage.googleapis.com/broad-public-datasets/intervals_hg38.list' from helper 'tools/credential-helper': Cannot run program "tools/credential-helper" (in directory "..."): error=2, No such file or directory
+    WARNING: Error retrieving auth headers, continuing without: Failed to get credentials for 'https://malte-s3-bazel-test.s3.amazonaws.com/hello_world' from helper 'tools/credential-helper': Cannot run program "tools/credential-helper" (in directory "..."): error=2, No such file or directory
     ```
 
-    You need to install a credential helper (either [`tweag-credential-helper`][tweag-credential-helper], the [shell script][credential-helper], or your own) as explained [above](#installation).
-
-- Credential helper not working
-
-    ```
-    WARNING: Error retrieving auth headers, continuing without: Failed to get credentials for 'https://storage.googleapis.com/...' from helper 'tools/credential-helper': process timed out
-    ```
-
-    Run `gcloud auth application-default print-access-token` to see why it fails and ensure you are logged in and have application default credentials configured.
+    You need to install a credential helper (either [`tweag-credential-helper`][tweag-credential-helper], or your own) as explained [above](#installation).
 
 - HTTP 401 or 403 error codes
 
     ```
-    ERROR: Target parsing failed due to unexpected exception: java.io.IOException: Error downloading [https://storage.googleapis.com/...] to ...: GET returned 403 Forbidden
+    ERROR: Target parsing failed due to unexpected exception: java.io.IOException: Error downloading [https://s3.amazonaws.com/...] to ...: GET returned 403 Forbidden
     ```
 
-    Ensure the user you are logged in as has access to the bucket using `gsutil ls s3://<BUCKET_NAME>/<OBJECT>` and check if the credential helper is configured in `.bazelrc` like this: `--credential_helper=storage.googleapis.com=%workspace%/tools/credential-helper`.
+    Follow the setup instructions of your credential helper ([`tweag-credential-helper` docs][tweag-credential-helper-s3-docs]).
 
 -  Checksum mismatch (empty file downloaded)
 
@@ -270,7 +262,7 @@ _`rules_s3` is based on [`rules_gcs`][rules_gcs_github], which was initially dev
 [s3]: https://aws.amazon.com/s3/
 [s3-signature]: https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html
 [rules_gcs_github]: https://github.com/tweag/rules_gcs
-[credential-helper]: /tools/credential-helper
 [bcr]: https://registry.bazel.build/modules/rules_s3
 [imax]: https://www.imax.com/en/us/sct
 [tweag-credential-helper]: https://github.com/tweag/credential-helper
+[tweag-credential-helper-s3-docs]: https://github.com/tweag/credential-helper/blob/main/docs/providers/s3.md
