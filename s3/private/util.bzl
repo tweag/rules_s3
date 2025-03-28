@@ -46,7 +46,7 @@ def repository_ctx_download_common_args(attr, bucket_name, remote_path):
     if has_integrity == has_sha256:
         fail("expected exactly one of \"integrity\" and \"sha256\"")
     args = {
-        "url": bucket_url(bucket_name, remote_path),
+        "url": bucket_url(attr, bucket_name, remote_path),
         "sha256": attr.sha256,
         "integrity": attr.integrity,
     }
@@ -78,8 +78,36 @@ def download_and_extract_args(attr, bucket_name, remote_path):
         args.pop("rename_files")
     return args
 
-def bucket_url(bucket, object_path):
-    return "https://storage.googleapis.com/{}/{}".format(bucket, url_encode(object_path))
+def bucket_url(attr, bucket, object_path):
+    endpoint = attr.endpoint
+    if attr.endpoint == None or len(attr.endpoint) == 0:
+        # default to global endpoint
+        endpoint = "s3.amazonaws.com"
+    style = endpoint_style_with_default(attr.endpoint_style, endpoint)
+    if style == "path":
+        # path-style
+        return "https://{endpoint}/{bucket}/{object_path}".format(
+            endpoint = endpoint,
+            bucket = bucket,
+            object_path = object_path,
+        )
+    # virtual-hosted style
+    return "https://{bucket}.{endpoint}/{object_path}".format(
+        bucket = bucket,
+        endpoint = endpoint,
+        object_path = object_path,
+    )
+
+def endpoint_style_with_default(style, endpoint):
+    if style != None and len(style) > 0:
+        if style in ["virtual-hosted", "path"]:
+            return style
+        fail("invalid endpoint_style {}".format(style))
+    if endpoint.endswith(".amazonaws.com"):
+        return "virtual-hosted"
+    if endpoint.endswith(".r2.cloudflarestorage.com"):
+        return "path"
+    return "path"
 
 def deps_from_file(module_ctx, lockfile_label, jsonpath):
     lockfile_path = module_ctx.path(lockfile_label)

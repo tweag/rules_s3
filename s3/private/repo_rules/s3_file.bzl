@@ -16,7 +16,7 @@ limitations under the License.
 """
 
 load("//s3/private:url_encoding.bzl", "url_encode")
-load("//s3/private:util.bzl", "bucket_url", "download_args", "parse_s3_url", "have_unblocked_downloads")
+load("//s3/private:util.bzl", "download_args", "parse_s3_url", "have_unblocked_downloads")
 
 def _s3_file_impl(repository_ctx):
     s3_url = repository_ctx.attr.url
@@ -95,6 +95,27 @@ easier but should be set before shipping.""",
     "url": attr.string(
         mandatory = True,
         doc = "A URL to a file that will be made available to Bazel.\nThis must be a 's3://' URL.",
+    ),
+    "endpoint": attr.string(
+        default = "s3.amazonaws.com",
+        doc = """Optional S3 endpoint (for AWS regional endpoint or S3-compatible object storage).
+If not set, the AWS S3 global endpoint "s3.amazonaws.com" is used.
+
+Examples: AWS regional endpoint (`s3.<region-code>.amazonaws.com`): `"s3.us-west-2.amazonaws.com"`, Cloudflare R2 endpoint (`<accountid>.r2.cloudflarestorage.com`): `"12345.r2.cloudflarestorage.com"`.
+""",
+    ),
+    "endpoint_style": attr.string(
+        values = ["virtual-hosted", "path"],
+        doc = """Optional URL style to be used.
+AWS strongly recommends virtual-hosted-style, where the request is encoded as follows:
+    https://bucket-name.s3.region-code.amazonaws.com/key-name
+
+Path-style URLs on the other hand include the bucket name as part of the URL path:
+    https://s3.region-code.amazonaws.com/bucket-name/key-name
+
+S3-compatible object storage varies in the supported styles, but the path-style is more common.
+If unset, a default style is chosen based on the endpoint: "*.amazonaws.com": virtual-hosted, "*.r2.cloudflarestorage.com": path, generic: path.
+""",
     ),
 }
 

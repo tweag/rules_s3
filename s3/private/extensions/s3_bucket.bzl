@@ -45,7 +45,7 @@ def _s3_bucket_impl(module_ctx):
             deps = deps_from_file(module_ctx, from_file.lockfile, from_file.lockfile_jsonpath)
             if from_file.method != "eager":
                 for local_path, info in deps.items():
-                    args = dep_to_blob_repo(from_file.bucket, local_path, info)
+                    args = dep_to_blob_repo(from_file, local_path, info)
                     if args["name"] not in blob_repos:
                         blob_repos[args["name"]] = args
                     elif args != blob_repos[args["name"]]:
@@ -61,16 +61,23 @@ def _s3_bucket_impl(module_ctx):
         reproducible = True,
     )
 
-def dep_to_blob_repo(bucket_name, local_path, info):
-    s3_url = "s3://{}/{}".format(bucket_name, info["remote_path"])
-    return {
-        "name": object_repo_name(bucket_name, info["remote_path"]),
+def dep_to_blob_repo(from_file, local_path, info):
+    s3_url = "s3://{}/{}".format(from_file.bucket, info["remote_path"])
+    endpoint = from_file.endpoint if (from_file.endpoint != None and len(from_file.endpoint) > 0) else None
+    endpoint_style = from_file.endpoint_style if (from_file.endpoint_style != None and len(from_file.endpoint_style) > 0) else None
+    repo_args = {
+        "name": object_repo_name(from_file.bucket, info["remote_path"]),
         "downloaded_file_path": local_path,
         "executable": True,
         "sha256": info["sha256"] if "sha256" in info else None,
         "integrity": info["integrity"] if "integrity" in info else None,
         "url": s3_url,
     }
+    if endpoint != None:
+        repo_args["endpoint"] = endpoint
+    if endpoint_style != None:
+        repo_args["endpoint_style"] = endpoint_style
+    return repo_args
 
 def generate_hub_repo(from_file_tag):
     if from_file_tag.method == "symlink":
@@ -93,7 +100,7 @@ def generate_hub_repo(from_file_tag):
 _s3_bucket_doc = """Downloads a collection of objects from an S3 bucket and makes them available under a single hub repository name.
 
 Examples:
-  Suppose your code depends on a collection of large assets that are used during code generation or testing. Those assets are stored in a private s3 bucket `s3://my_org_assets`.
+  Suppose your code depends on a collection of large assets that are used during code generation or testing. Those assets are stored in a private S3 bucket `s3://my_org_assets`.
 
   In the local repository, the user creates a `s3_lock.json` JSON lockfile describing the required objects, including their expected hashes:
 
@@ -144,6 +151,27 @@ _from_file_attrs = {
     "bucket": attr.string(
         doc = "Name of the S3 bucket",
         mandatory = True,
+    ),
+    "endpoint": attr.string(
+        default = "s3.amazonaws.com",
+        doc = """Optional S3 endpoint (for AWS regional endpoint or S3-compatible object storage).
+If not set, the AWS S3 global endpoint "s3.amazonaws.com" is used.
+
+Examples: AWS regional endpoint (`s3.<region-code>.amazonaws.com`): `"s3.us-west-2.amazonaws.com"`, Cloudflare R2 endpoint (`<accountid>.r2.cloudflarestorage.com`): `"12345.r2.cloudflarestorage.com"`.
+""",
+    ),
+    "endpoint_style": attr.string(
+        values = ["virtual-hosted", "path"],
+        doc = """Optional URL style to be used.
+AWS strongly recommends virtual-hosted-style, where the request is encoded as follows:
+    https://bucket-name.s3.region-code.amazonaws.com/key-name
+
+Path-style URLs on the other hand include the bucket name as part of the URL path:
+    https://s3.region-code.amazonaws.com/bucket-name/key-name
+
+S3-compatible object storage varies in the supported styles, but the path-style is more common.
+If unset, a default style is chosen based on the endpoint: "*.amazonaws.com": virtual-hosted, "*.r2.cloudflarestorage.com": path, generic: path.
+""",
     ),
     "lockfile": attr.label(
         doc = "JSON lockfile containing objects to load from the S3 bucket",
