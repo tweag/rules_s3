@@ -9,6 +9,11 @@ module(
 # ✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂✂
 
 bazel_dep(
+    name = "tweag-credential-helper",
+    version = "0.0.3",
+    dev_dependency = True,
+)
+bazel_dep(
     name = "bazel_skylib",
     version = "1.7.1",
     dev_dependency = True,
