@@ -55,6 +55,8 @@ eager = repository_rule(
     implementation = _eager_impl,
     attrs = {
         "bucket": attr.string(),
+        "endpoint": attr.string(default = "s3.amazonaws.com"),
+        "endpoint_style": attr.string(values = ["virtual-hosted", "path"]),
         "lockfile": attr.label(
             doc = "Map of dependency files to load from the S3 bucket",
         ),
