@@ -1,7 +1,7 @@
 # To update these lines, execute
 # `bazel run @rules_bazel_integration_test//tools:update_deleted_packages`
-build --deleted_packages=examples/full,examples/full/tool_test,examples/tweag-credential-helper
-query --deleted_packages=examples/full,examples/full/tool_test,examples/tweag-credential-helper
+build --deleted_packages=examples/full,examples/full/tool_test
+query --deleted_packages=examples/full,examples/full/tool_test
 
 # for stardoc
 common --incompatible_enable_proto_toolchain_resolution
