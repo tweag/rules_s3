@@ -25,7 +25,7 @@ def _eager_impl(repository_ctx):
     # start downloads
     waiters = []
     for local_path, info in deps.items():
-        args = info_to_download_args(repository_ctx.attr.bucket, local_path, info)
+        args = info_to_download_args(repository_ctx.attr, repository_ctx.attr.bucket, local_path, info)
         waiters.append(repository_ctx.download(**args))
 
     # populate BUILD file
@@ -36,9 +36,9 @@ def _eager_impl(repository_ctx):
         for waiter in waiters:
             waiter.wait()
 
-def info_to_download_args(bucket_name, local_path, info):
+def info_to_download_args(attr, bucket_name, local_path, info):
     args = {
-        "url": bucket_url(bucket_name, info["remote_path"]),
+        "url": bucket_url(attr, bucket_name, info["remote_path"]),
         "output": local_path,
         "executable": True,
         "block": False,
