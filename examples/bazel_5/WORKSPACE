@@ -1,14 +1,13 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# TODO: use http_archive after release
 # v1.0.1 is the earliest verson supporting Bazel 5.
 # Always use the latest version available.
-# http_archive(
-#     name = "rules_s3",
-#     urls = ["https://github.com/tweag/rules_s3/releases/download/v1.0.1/rules_s3-v1.0.1.tar.gz"],
-#     sha256 = "",
-#     strip_prefix = "rules_s3-1.0.1",
-# )
+http_archive(
+    name = "rules_s3",
+    urls = ["https://github.com/tweag/rules_s3/releases/download/v1.0.1/rules_s3-v1.0.1.tar.gz"],
+    sha256 = "fcb740c7436035b46e94f54b4cb82d5336ed661cf3f3b7bec066c9e06122e06f",
+    strip_prefix = "rules_s3-1.0.1",
+)
 local_repository(
     name = "rules_s3",
     path = "../..",
