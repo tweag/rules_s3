@@ -16,7 +16,7 @@ limitations under the License.
 """
 
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "patch")
-load("//s3/private:util.bzl", "download_and_extract_args", "parse_s3_url")
+load("//s3/private:util.bzl", "download_and_extract_args", "parse_s3_url", "workspace_and_buildfile")
 
 def _s3_archive_impl(repository_ctx):
     s3_url = repository_ctx.attr.url
@@ -31,14 +31,7 @@ def _s3_archive_impl(repository_ctx):
     patch(repository_ctx)
 
     # populate BUILD files
-    has_build_file_content = len(repository_ctx.attr.build_file_content) > 0
-    has_build_file_label = repository_ctx.attr.build_file != None
-    if has_build_file_content and has_build_file_label:
-        fail("must specify only one of \"build_file_content\" and \"build_file\"")
-    if has_build_file_content:
-        repository_ctx.file("BUILD.bazel", repository_ctx.attr.build_file_content)
-    if has_build_file_label:
-        repository_ctx.file("BUILD.bazel", repository_ctx.read(repository_ctx.attr.build_file))
+    workspace_and_buildfile(repository_ctx)
 
 _s3_archive_doc = """Downloads a Bazel repository as a compressed archive file from an S3 bucket, decompresses it,
 and makes its targets available for binding.

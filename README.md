@@ -122,8 +122,8 @@ Examples:
 <pre>
 load("@rules_s3//s3:repo_rules.bzl", "s3_file")
 
-s3_file(<a href="#s3_file-name">name</a>, <a href="#s3_file-canonical_id">canonical_id</a>, <a href="#s3_file-downloaded_file_path">downloaded_file_path</a>, <a href="#s3_file-endpoint">endpoint</a>, <a href="#s3_file-endpoint_style">endpoint_style</a>, <a href="#s3_file-executable">executable</a>, <a href="#s3_file-integrity">integrity</a>,
-        <a href="#s3_file-repo_mapping">repo_mapping</a>, <a href="#s3_file-sha256">sha256</a>, <a href="#s3_file-url">url</a>)
+s3_file(<a href="#s3_file-name">name</a>, <a href="#s3_file-build_file">build_file</a>, <a href="#s3_file-build_file_content">build_file_content</a>, <a href="#s3_file-canonical_id">canonical_id</a>, <a href="#s3_file-downloaded_file_path">downloaded_file_path</a>, <a href="#s3_file-endpoint">endpoint</a>,
+        <a href="#s3_file-endpoint_style">endpoint_style</a>, <a href="#s3_file-executable">executable</a>, <a href="#s3_file-integrity">integrity</a>, <a href="#s3_file-repo_mapping">repo_mapping</a>, <a href="#s3_file-sha256">sha256</a>, <a href="#s3_file-url">url</a>)
 </pre>
 
 Downloads a file from an S3 bucket and makes it available to be used as a file group.
@@ -151,6 +151,8 @@ Examples:
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="s3_file-name"></a>name |  A unique name for this repository.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="s3_file-build_file"></a>build_file |  The file to use as the BUILD file for this repository.This attribute is an absolute label (use '@//' for the main repo). The file does not need to be named BUILD, but can be (something like BUILD.new-repo-name may work well for distinguishing it from the repository's actual BUILD files. Either build_file or build_file_content can be specified, but not both.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
+| <a id="s3_file-build_file_content"></a>build_file_content |  The content for the BUILD file for this repository. Either build_file or build_file_content can be specified, but not both.   | String | optional |  `""`  |
 | <a id="s3_file-canonical_id"></a>canonical_id |  A canonical ID of the file downloaded.<br><br>If specified and non-empty, Bazel will not take the file from cache, unless it was added to the cache by a request with the same canonical ID.<br><br>If unspecified or empty, Bazel by default uses the URLs of the file as the canonical ID. This helps catch the common mistake of updating the URLs without also updating the hash, resulting in builds that succeed locally but fail on machines without the file in the cache.   | String | optional |  `""`  |
 | <a id="s3_file-downloaded_file_path"></a>downloaded_file_path |  Optional output path for the downloaded file. The remote path from the URL is used as a fallback.   | String | optional |  `""`  |
 | <a id="s3_file-endpoint"></a>endpoint |  Optional S3 endpoint (for AWS regional endpoint or S3-compatible object storage). If not set, the AWS S3 global endpoint "s3.amazonaws.com" is used.<br><br>Examples: AWS regional endpoint (`s3.<region-code>.amazonaws.com`): `"s3.us-west-2.amazonaws.com"`, Cloudflare R2 endpoint (`<accountid>.r2.cloudflarestorage.com`): `"12345.r2.cloudflarestorage.com"`.   | String | optional |  `"s3.amazonaws.com"`  |
