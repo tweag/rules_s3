@@ -4,7 +4,10 @@ stardoc(
     name = "repo_rules",
     out = "repo_rules.md",
     input = "//s3:repo_rules.bzl",
-    deps = ["//s3/private/repo_rules"],
+    deps = [
+        "//s3/private/repo_rules",
+        "@bazel_tools//tools/build_defs/repo:utils.bzl",
+    ],
 )
 
 stardoc(
