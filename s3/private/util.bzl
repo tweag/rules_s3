@@ -169,3 +169,16 @@ def have_unblocked_downloads():
     if version[0] == 7 and version[1] < 1:
         return False
     return True
+
+
+def workspace_and_buildfile(repository_ctx, fallback_build_file_content = None):
+    has_build_file_content = len(repository_ctx.attr.build_file_content) > 0
+    has_build_file_label = repository_ctx.attr.build_file != None
+    if has_build_file_content and has_build_file_label:
+        fail("must specify only one of \"build_file_content\" and \"build_file\"")
+    if has_build_file_content:
+        repository_ctx.file("BUILD.bazel", repository_ctx.attr.build_file_content)
+    if has_build_file_label:
+        repository_ctx.file("BUILD.bazel", repository_ctx.read(repository_ctx.attr.build_file))
+    if (not has_build_file_content or has_build_file_label):
+        repository_ctx.file("BUILD.bazel", fallback_build_file_content)
