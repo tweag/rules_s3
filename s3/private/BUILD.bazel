@@ -24,6 +24,7 @@ bzl_library(
         "//docs:__pkg__",
         "//s3/private:__subpackages__",
     ],
+    deps = ["@bazel_tools//tools/build_defs/repo:utils.bzl"],
 )
 
 filegroup(

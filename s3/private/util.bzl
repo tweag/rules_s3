@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "update_attrs")
 load("//s3/private:jsonpath.bzl", "walk_jsonpath")
 load("//s3/private:url_encoding.bzl", "url_encode")
 
@@ -182,3 +183,33 @@ def workspace_and_buildfile(repository_ctx, fallback_build_file_content = None):
         repository_ctx.file("BUILD.bazel", repository_ctx.read(repository_ctx.attr.build_file))
     if (not has_build_file_content or has_build_file_label):
         repository_ctx.file("BUILD.bazel", fallback_build_file_content)
+
+def update_integrity_attr(repository_ctx, attrs, download_info):
+    """Returns repository metadata for repo_contents_cache support.
+
+    If sha256 or integrity is already specified, marks the repository as reproducible.
+    Otherwise, updates the integrity attribute with the download_info for reproducibility.
+
+    Args:
+        repository_ctx: The repository context.
+        attrs: The repository rule attributes.
+        download_info: The download information from repository_ctx.download().
+
+    Returns:
+        The repository metadata, or None if repo_metadata is not supported.
+    """
+    if not hasattr(repository_ctx, "repo_metadata"):
+        # Old Bazel versions do not support repo_metadata
+        return None
+    if repository_ctx.attr.sha256 or repository_ctx.attr.integrity:
+        # If integrity or sha256 is already specified, mark as reproducible
+        return repository_ctx.repo_metadata(reproducible = True)
+    # Override integrity attribute for reproducibility
+    integrity_override = {"integrity": download_info.integrity}
+    return repository_ctx.repo_metadata(
+        attrs_for_reproducibility = update_attrs(
+            repository_ctx.attr,
+            attrs.keys(),
+            integrity_override,
+        ),
+    )
