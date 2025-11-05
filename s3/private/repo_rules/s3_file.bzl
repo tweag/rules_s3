@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-load("//s3/private:url_encoding.bzl", "url_encode")
-load("//s3/private:util.bzl", "download_args", "parse_s3_url", "have_unblocked_downloads", "workspace_and_buildfile")
+load("//s3/private:util.bzl", "download_args", "parse_s3_url", "have_unblocked_downloads", "update_integrity_attr", "workspace_and_buildfile")
 
 def _s3_file_impl(repository_ctx):
     s3_url = repository_ctx.attr.url
@@ -25,7 +24,7 @@ def _s3_file_impl(repository_ctx):
 
     # start download
     args = download_args(repository_ctx.attr, target["bucket_name"], target["remote_path"])
-    waiter = repository_ctx.download(**args)
+    download_info = repository_ctx.download(**args)
 
     # populate BUILD files
     workspace_and_buildfile(repository_ctx, fallback_build_file_content = "exports_files(glob([\"**\"]))")
@@ -37,7 +36,9 @@ def _s3_file_impl(repository_ctx):
 
     # wait for download to finish
     if have_unblocked_downloads():
-        waiter.wait()
+        download_info = download_info.wait()
+
+    return update_integrity_attr(repository_ctx, _s3_file_attrs, download_info)
 
 _s3_file_doc = """Downloads a file from an S3 bucket and makes it available to be used as a file group.
 

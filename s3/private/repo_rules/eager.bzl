@@ -17,26 +17,45 @@ limitations under the License.
 
 load("//s3/private:util.bzl", "bucket_url", "deps_from_file", "have_unblocked_downloads")
 
+def info_is_reproducible(info):
+    """Check if download info has integrity information (sha256 or integrity)."""
+    return "sha256" in info or "integrity" in info
+
 def _eager_impl(repository_ctx):
     repository_ctx.report_progress("Downloading files from s3://{}".format(repository_ctx.attr.lockfile))
     deps = deps_from_file(repository_ctx, repository_ctx.attr.lockfile, repository_ctx.attr.lockfile_jsonpath)
-    build_file_content = """load("@rules_s3//s3/private/rules:copy.bzl", "copy")\n"""
-
     # start downloads
     waiters = []
+    reproducible = True
     for local_path, info in deps.items():
         args = info_to_download_args(repository_ctx.attr, repository_ctx.attr.bucket, local_path, info)
         waiters.append(repository_ctx.download(**args))
+        reproducible = reproducible and info_is_reproducible(info)
 
     # populate BUILD file
-    repository_ctx.file("BUILD.bazel", "exports_files(glob([\"**\"]))".format(args["output"]))
+    repository_ctx.file("BUILD.bazel", "exports_files(glob([\"**\"]))")
 
     # wait for downloads to finish
     if have_unblocked_downloads():
         for waiter in waiters:
             waiter.wait()
 
+    if hasattr(repository_ctx, "repo_metadata"):
+        return repository_ctx.repo_metadata(reproducible = reproducible)
+    return None
+
 def info_to_download_args(attr, bucket_name, local_path, info):
+    """Convert download info to repository_ctx.download arguments.
+
+    Args:
+        attr: Repository rule attributes.
+        bucket_name: S3 bucket name.
+        local_path: Local path for the downloaded file.
+        info: Download information dict containing remote_path and optionally sha256/integrity.
+
+    Returns:
+        Dict of arguments for repository_ctx.download().
+    """
     args = {
         "url": bucket_url(attr, bucket_name, info["remote_path"]),
         "output": local_path,

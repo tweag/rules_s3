@@ -15,8 +15,39 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "patch")
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "patch", "update_attrs")
 load("//s3/private:util.bzl", "download_and_extract_args", "parse_s3_url", "workspace_and_buildfile")
+
+def _update_s3_archive_integrity_attrs(ctx, attrs, download_info, patch_info):
+    """Update integrity attributes for s3_archive to ensure reproducibility.
+
+    Args:
+        ctx: The repository context.
+        attrs: The attributes dict for the repository rule.
+        download_info: Download information from download_and_extract.
+        patch_info: Patch information from the patch function.
+
+    Returns:
+        Repository metadata with reproducibility information.
+    """
+    if not hasattr(ctx, "repo_metadata"):
+        # Old Bazel versions do not support repo_metadata
+        return None
+
+    integrity_override = {}
+
+    # We don't need to override the integrity attribute if sha256 is already specified.
+    if not ctx.attr.sha256 and not ctx.attr.integrity:
+        integrity_override["integrity"] = download_info.integrity
+
+    # Update remote_patches if the patch function provided new integrity values
+    if hasattr(patch_info, "remote_patches") and ctx.attr.remote_patches != patch_info.remote_patches:
+        integrity_override["remote_patches"] = patch_info.remote_patches
+
+    if not integrity_override:
+        return ctx.repo_metadata(reproducible = True)
+
+    return ctx.repo_metadata(attrs_for_reproducibility = update_attrs(ctx.attr, attrs.keys(), integrity_override))
 
 def _s3_archive_impl(repository_ctx):
     s3_url = repository_ctx.attr.url
@@ -25,13 +56,15 @@ def _s3_archive_impl(repository_ctx):
 
     # download && extract the repo
     args = download_and_extract_args(repository_ctx.attr, target["bucket_name"], target["remote_path"])
-    repository_ctx.download_and_extract(**args)
+    download_info = repository_ctx.download_and_extract(**args)
 
     # apply patches after extraction has finished
-    patch(repository_ctx)
+    patch_info = patch(repository_ctx)
 
     # populate BUILD files
     workspace_and_buildfile(repository_ctx)
+
+    return _update_s3_archive_integrity_attrs(repository_ctx, _s3_archive_attrs, download_info, patch_info)
 
 _s3_archive_doc = """Downloads a Bazel repository as a compressed archive file from an S3 bucket, decompresses it,
 and makes its targets available for binding.
